@@ -99,7 +99,7 @@ export default function App() {
               <div className="bg-white border border-slate-200/80 rounded-xl p-4 text-center">
                 <div className="text-indigo-600 font-bold text-sm mb-1">ONNX / Transformers.js</div>
                 <p className="text-[11px] text-slate-500 leading-relaxed">
-                  ruri-v3-30m 等の埋め込みモデルをWasm/WebGPU上で高速ローカル実行
+                  ruri-v3-30m (日本語専用) や multilingual-e5-small (多言語) をWasm上でローカル実行
                 </p>
               </div>
 

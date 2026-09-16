@@ -19,21 +19,35 @@ if (typeof window !== 'undefined') {
 export const AVAILABLE_EMBEDDING_MODELS = [
   {
     id: 'cl-nagoya/ruri-v3-30m',
-    name: 'ruri-v3-30m (日本語・英語対応、超軽量30Mパラメータ)',
+    name: 'ruri-v3-30m (日本語専用・超軽量30Mパラメータ)',
+    description: '日本語テキスト専用の最先端高精度モデル。国内論文や日本語文書の解析に最適です。',
     dimension: 384,
     recommended: true,
+    languages: '日本語専用',
+  },
+  {
+    id: 'Xenova/multilingual-e5-small',
+    name: 'multilingual-e5-small (多言語対応・約100言語・高精度)',
+    description: '英語・日本語を含む多言語混在論文や国際学術誌に対応した小型強力モデル。',
+    dimension: 384,
+    recommended: false,
+    languages: '多言語（日本語・英語・他100言語）',
   },
   {
     id: 'Xenova/all-MiniLM-L6-v2',
-    name: 'all-MiniLM-L6-v2 (国際論文・英語に最適、高速・軽量)',
+    name: 'all-MiniLM-L6-v2 (英語論文に最適、高速・軽量)',
+    description: '英語の学術論文や国際会議プロシーディングスに広く利用される標準軽量モデル。',
     dimension: 384,
     recommended: false,
+    languages: '英語',
   },
   {
     id: 'Xenova/bge-small-en-v1.5',
-    name: 'bge-small-en-v1.5 (学術検索・類似度計算に高精度)',
+    name: 'bge-small-en-v1.5 (英語学術検索・類似度計算に高精度)',
+    description: '高密度検索ベンチマークで高いスコアを記録する英語向け学術モデル。',
     dimension: 384,
     recommended: false,
+    languages: '英語',
   },
 ] as const;
 

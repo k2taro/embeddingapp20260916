@@ -83,6 +83,29 @@ export const EngineSettingsModal: React.FC<EngineSettingsModalProps> = ({
                 </option>
               ))}
             </select>
+            {(() => {
+              const selected = AVAILABLE_EMBEDDING_MODELS.find((m) => m.id === modelName);
+              if (!selected) return null;
+              return (
+                <div className="mt-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 text-[11px] space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-slate-700">対応言語:</span>
+                    <span className={`px-2 py-0.5 rounded-full font-medium text-[10px] ${
+                      selected.id === 'cl-nagoya/ruri-v3-30m'
+                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                        : selected.id === 'Xenova/multilingual-e5-small'
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                        : 'bg-blue-100 text-blue-800 border border-blue-200'
+                    }`}>
+                      {selected.languages}
+                    </span>
+                  </div>
+                  <p className="text-slate-600 leading-relaxed">
+                    {selected.description}
+                  </p>
+                </div>
+              );
+            })()}
           </div>
 
           {/* クラスタ数 K */}

@@ -127,4 +127,65 @@ export const SAMPLE_ACADEMIC_PAPERS: ExtractedPaper[] = [
     fileSize: 580000,
     createdAt: new Date().toISOString(),
   },
+
+  // --- 分野E: 記念碑的物理学・新元素・情報統計力学 ---
+  {
+    id: 'sample_physics_nihonium',
+    fileName: 'morita_et_al_experiment_on_element_113_nihonium.pdf',
+    title: 'Experiment on the Synthesis of Element 113 in the Reaction 209Bi(70Zn, n)278113',
+    abstract: 'We report the observation of an unambiguous alpha-decay chain starting from the superheavy nucleus of element 113 (Nihonium, Nh), produced in the complete fusion reaction of 209Bi with 70Zn at the RIKEN Linear Accelerator (RILAC). Three consecutive alpha-decays following the implantation of 278113 into a position-sensitive semiconductor detector were clearly detected and assigned based on genetic decay correlations with known daughter nuclides 274111 and 270Bh.',
+    fullText: 'Kosuke Morita and the RIKEN heavy-ion research group utilized the gas-filled recoil separator GARIS. The observation of subsequent spontaneous fission and alpha decays provided conclusive evidence for the discovery of the 113th element, subsequently officially named Nihonium (Nh).',
+    pageCount: 11,
+    charCount: 21500,
+    fileSize: 490000,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'sample_physics_higgs',
+    fileName: 'observation_of_higgs_boson_atlas_cms.pdf',
+    title: 'Observation of a New Boson at a Mass of 125 GeV with the ATLAS and CMS Experiments at the LHC',
+    abstract: 'A search for the Standard Model Higgs boson is presented using proton-proton collision data recorded by the ATLAS and CMS detectors at the CERN Large Hadron Collider (LHC). An excess of events is observed with high statistical significance in the diphoton invariant mass spectrum and the four-lepton decay channel, corresponding to the discovery of a neutral scalar boson with a mass near 125 GeV, confirming the Brout-Englert-Higgs mechanism of electroweak symmetry breaking.',
+    fullText: 'The discovery of the Higgs boson represents a historic milestone in fundamental particle physics. The combined local significance exceeds 5 standard deviations (5 sigma), establishing the existence of a spin-0 resonance consistent with the quantum of the Higgs scalar field responsible for generating masses of elementary particles.',
+    pageCount: 29,
+    charCount: 54000,
+    fileSize: 1200000,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'sample_physics_maxwell_demon',
+    fileName: 'experimental_observation_mutual_information_maxwell_demon.pdf',
+    title: 'Experimental Observation of the Role of Mutual Information in the Nonequilibrium Dynamics of a Maxwell Demon',
+    abstract: 'We experimentally demonstrate information-to-energy conversion using a submicron dielectric particle controlled by real-time feedback in a fluctuating fluid environment. By measuring the generalized Jarzynski equality that incorporates measurement error and mutual information, we quantitatively verify that a Maxwell demon can extract work from thermal fluctuations beyond the conventional second law of thermodynamics by consuming mutual information obtained through observation.',
+    fullText: 'The experiment realizes a microscopic Szilard engine and experimentally confirms Sagawa-Ueda nonequilibrium thermodynamic relations. The feedback protocol applies electric potential barriers based on optical tracking, demonstrating that information acquired by the observer directly converts thermal energy into mechanical work.',
+    pageCount: 6,
+    charCount: 14200,
+    fileSize: 380000,
+    createdAt: new Date().toISOString(),
+  },
+
+  // --- 分野F: 再生医療・幹細胞生物学 ---
+  {
+    id: 'sample_stemcell_ips',
+    fileName: 'induction_of_pluripotent_stem_cells_yamanaka.pdf',
+    title: 'Induction of Pluripotent Stem Cells from Mouse and Human Fibroblasts by Defined Factors',
+    abstract: 'Differentiated cells can be reprogrammed to an embryonic-like pluripotent state by the ectopic expression of four defined transcription factors: Oct3/4, Sox2, Klf4, and c-Myc (the Yamanaka factors). These induced pluripotent stem (iPS) cells exhibit the morphology, gene expression profile, epigenetic status, and pluripotency characteristic of embryonic stem cells, including the capability to differentiate into cell types of all three germ layers.',
+    fullText: 'Kazutoshi Takahashi and Shinya Yamanaka demonstrated that cellular lineage differentiation is fully reversible without somatic nuclear transfer or unfertilized oocytes. The establishment of human iPS cells opens unprecedented avenues for regenerative medicine, drug discovery, disease modeling, and ethical patient-specific cell replacement therapies.',
+    pageCount: 18,
+    charCount: 36500,
+    fileSize: 760000,
+    createdAt: new Date().toISOString(),
+  },
+
+  // --- 分野G: 次世代エネルギー・材料化学 ---
+  {
+    id: 'sample_energy_perovskite',
+    fileName: 'organometal_halide_perovskite_solar_cells_kojima_miyashita.pdf',
+    title: 'Organometal Halide Perovskites as Visible-Light Sensitizers for Photovoltaic Energy Conversion',
+    abstract: 'Organometal lead halide perovskite semiconductors (CH3NH3PbI3 and CH3NH3PbBr3) function as efficient visible-light absorbers in dye-sensitized liquid and solid-state solar cells. Their direct bandgap, high absorption coefficient across the solar spectrum, exceptional charge-carrier mobility, and long carrier diffusion lengths have propelled perovskite solar cells to groundbreaking power conversion efficiencies through rapid material engineering and roll-to-roll printable coating processes.',
+    fullText: 'Originating from the pioneering research by Akihiro Kojima and Tsutomu Miyasaka, perovskite photovoltaics has emerged as the most rapidly advancing solar cell technology in history, bridging low manufacturing costs with efficiencies rivaling traditional crystalline silicon photovoltaics.',
+    pageCount: 12,
+    charCount: 23800,
+    fileSize: 495000,
+    createdAt: new Date().toISOString(),
+  },
 ];
