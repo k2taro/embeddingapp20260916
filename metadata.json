@@ -1,0 +1,6 @@
+{
+  "name": "Local Paper Visualizer",
+  "description": "学術文献（PDF）をブラウザ上で完全ローカル処理（Wasm / ONNX）し、ベクトル化・UMAP・クラスタリングにより2次元マップ上に可視化するプライバシー完全保護ツール。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
