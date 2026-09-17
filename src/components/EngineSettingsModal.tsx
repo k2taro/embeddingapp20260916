@@ -6,9 +6,9 @@
  */
 
 import React, { useState } from 'react';
-import { EngineSettings } from '../types';
+import { EngineSettings, VisualizationMethod } from '../types';
 import { AVAILABLE_EMBEDDING_MODELS } from '../utils/embeddings';
-import { X, Sliders, Check, RefreshCw } from 'lucide-react';
+import { X, Sliders, Check, RefreshCw, Share2, Compass } from 'lucide-react';
 
 interface EngineSettingsModalProps {
   isOpen: boolean;
@@ -27,6 +27,12 @@ export const EngineSettingsModal: React.FC<EngineSettingsModalProps> = ({
   const [clusterCount, setClusterCount] = useState(currentSettings.clusterCount);
   const [umapNeighbors, setUmapNeighbors] = useState(currentSettings.umapNeighbors);
   const [umapMinDist, setUmapMinDist] = useState(currentSettings.umapMinDist);
+  const [visualizationMethod, setVisualizationMethod] = useState<VisualizationMethod>(
+    currentSettings.visualizationMethod || 'umap'
+  );
+  const [similarityThreshold, setSimilarityThreshold] = useState(
+    currentSettings.similarityThreshold ?? 0.65
+  );
 
   if (!isOpen) return null;
 
@@ -37,6 +43,8 @@ export const EngineSettingsModal: React.FC<EngineSettingsModalProps> = ({
       clusterCount,
       umapNeighbors,
       umapMinDist,
+      visualizationMethod,
+      similarityThreshold,
     });
     onClose();
   };
@@ -63,8 +71,8 @@ export const EngineSettingsModal: React.FC<EngineSettingsModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSave} className="space-y-4">
-          {/* モデル選択 */}
+        <form onSubmit={handleSave} className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+          {/* 1. モデル選択 */}
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
               ベクトル埋め込みモデル（ブラウザ内ONNX実行）
@@ -108,7 +116,152 @@ export const EngineSettingsModal: React.FC<EngineSettingsModalProps> = ({
             })()}
           </div>
 
-          {/* クラスタ数 K */}
+          {/* 2. 可視化手法の選択 */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              可視化手法の選択
+            </label>
+            <p className="text-[11px] text-slate-500 mb-2">
+              論文データの意味的関係を表現するグラフ表現手法を選択します
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setVisualizationMethod('umap')}
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                  visualizationMethod === 'umap'
+                    ? 'border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-500/20'
+                    : 'border-slate-200 bg-white hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Compass className={`w-4 h-4 ${visualizationMethod === 'umap' ? 'text-indigo-600' : 'text-slate-500'}`} />
+                    <span className="text-xs font-bold text-slate-800">
+                      UMAP 2D マップ
+                    </span>
+                  </div>
+                  {visualizationMethod === 'umap' && (
+                    <Check className="w-3.5 h-3.5 text-indigo-600" />
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-500 leading-normal">
+                  高次元の意味空間を2次元平面上に滑らかに圧縮・散布図配置
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setVisualizationMethod('network')}
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                  visualizationMethod === 'network'
+                    ? 'border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-500/20'
+                    : 'border-slate-200 bg-white hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Share2 className={`w-4 h-4 ${visualizationMethod === 'network' ? 'text-indigo-600' : 'text-slate-500'}`} />
+                    <span className="text-xs font-bold text-slate-800">
+                      類似度ネットワーク
+                    </span>
+                  </div>
+                  {visualizationMethod === 'network' && (
+                    <Check className="w-3.5 h-3.5 text-indigo-600" />
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-500 leading-normal">
+                  コサイン類似度が閾値以上の論文ペアをエッジで結ぶ力学モデル
+                </p>
+              </button>
+            </div>
+          </div>
+
+          {/* 類似度ネットワーク選択時：エッジ切断閾値設定 */}
+          {visualizationMethod === 'network' && (
+            <div className="p-3.5 rounded-xl bg-indigo-50/40 border border-indigo-100/80 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <Share2 className="w-3.5 h-3.5 text-indigo-600" />
+                  エッジ形成の類似度閾値
+                </label>
+                <span className="text-xs font-mono text-indigo-600 font-bold bg-white px-2 py-0.5 rounded-md border border-indigo-200">
+                  {Math.round(similarityThreshold * 100)}% ({similarityThreshold.toFixed(2)})
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                これ以下のコサイン類似度を持つエッジを切断（除外）します。0%にすると全ペアが接続され、閾値を上げると密接に関連した論文のみが線で結ばれます。
+              </p>
+              <input
+                type="range"
+                min={0}
+                max={0.95}
+                step={0.01}
+                value={similarityThreshold}
+                onChange={(e) => setSimilarityThreshold(parseFloat(e.target.value))}
+                className="w-full accent-indigo-600 cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                <span>0% (全結合)</span>
+                <span>30% (デフォルト)</span>
+                <span>95% (厳密一致)</span>
+              </div>
+            </div>
+          )}
+
+          {/* UMAP選択時：UMAP固有パラメータ設定 */}
+          {visualizationMethod === 'umap' && (
+            <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-3">
+              {/* UMAP: 近傍点数 */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700">
+                    UMAP 近傍探索数 (n_neighbors)
+                  </label>
+                  <span className="text-xs font-mono text-indigo-600 font-bold">
+                    {umapNeighbors}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-500 mb-1.5">
+                  局所的な類似関係と大域的な広がりのバランスを調整（数十本規模での利用に推奨: 5）
+                </p>
+                <input
+                  type="range"
+                  min={2}
+                  max={30}
+                  value={umapNeighbors}
+                  onChange={(e) => setUmapNeighbors(Number(e.target.value))}
+                  className="w-full accent-indigo-600 cursor-pointer"
+                />
+              </div>
+
+              {/* UMAP: 最小距離 */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700">
+                    UMAP 最小距離 (min_dist)
+                  </label>
+                  <span className="text-xs font-mono text-indigo-600 font-bold">
+                    {umapMinDist}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-500 mb-1.5">
+                  散布図上での点同士の密集度（小さいほど密に集まる）
+                </p>
+                <input
+                  type="range"
+                  min={0.01}
+                  max={0.5}
+                  step={0.01}
+                  value={umapMinDist}
+                  onChange={(e) => setUmapMinDist(Number(e.target.value))}
+                  className="w-full accent-indigo-600 cursor-pointer"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 3. クラスタ数 K */}
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="text-xs font-bold text-slate-700">
@@ -135,53 +288,6 @@ export const EngineSettingsModal: React.FC<EngineSettingsModalProps> = ({
               <span>6</span>
               <span>10</span>
             </div>
-          </div>
-
-          {/* UMAP: 近傍点数 */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-bold text-slate-700">
-                UMAP 近傍探索数 (n_neighbors)
-              </label>
-              <span className="text-xs font-mono text-indigo-600 font-bold">
-                {umapNeighbors}
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 mb-2">
-              局所的な類似関係を重視するか、大域的なトピックの広がりを重視するかを調整します
-            </p>
-            <input
-              type="range"
-              min={2}
-              max={30}
-              value={umapNeighbors}
-              onChange={(e) => setUmapNeighbors(Number(e.target.value))}
-              className="w-full accent-indigo-600 cursor-pointer"
-            />
-          </div>
-
-          {/* UMAP: 最小距離 */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-bold text-slate-700">
-                UMAP 最小距離 (min_dist)
-              </label>
-              <span className="text-xs font-mono text-indigo-600 font-bold">
-                {umapMinDist}
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 mb-2">
-              散布図上での点同士の密集度（小さいほど密に集まる）
-            </p>
-            <input
-              type="range"
-              min={0.01}
-              max={0.5}
-              step={0.01}
-              value={umapMinDist}
-              onChange={(e) => setUmapMinDist(Number(e.target.value))}
-              className="w-full accent-indigo-600 cursor-pointer"
-            />
           </div>
 
           {/* アクションボタン */}

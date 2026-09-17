@@ -115,7 +115,7 @@ export const PdfUploader: React.FC<PdfUploaderProps> = ({
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 shadow-2xs transition-all cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-              AI・量子・iPS・ニホニウム等のサンプル論文15件で試す
+              ノーベル賞・AI・量子等のサンプル論文30件で試す
             </button>
           </div>
         </div>

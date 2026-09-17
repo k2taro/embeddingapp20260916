@@ -7,6 +7,7 @@
  */
 
 import { pipeline, env } from '@huggingface/transformers';
+import { SimilarityEdge } from '../types';
 
 // ブラウザ環境向けの設定
 // ローカルファイルシステムの読み込みを無効化し、Hugging Face HubのWebキャッシュを活用
@@ -18,11 +19,19 @@ if (typeof window !== 'undefined') {
 /** 推奨される埋め込みモデルの候補 */
 export const AVAILABLE_EMBEDDING_MODELS = [
   {
+    id: 'Xenova/all-MiniLM-L6-v2',
+    name: 'all-MiniLM-L6-v2 (標準・高速・軽量、英語論文に最適)',
+    description: '英語学術論文や国際会議プロシーディングスで最も広く利用される標準軽量埋め込みモデル。高速かつ高い意味検索性能を持ちます。',
+    dimension: 384,
+    recommended: true,
+    languages: '英語（国際学術論文）',
+  },
+  {
     id: 'cl-nagoya/ruri-v3-30m',
     name: 'ruri-v3-30m (日本語専用・超軽量30Mパラメータ)',
     description: '日本語テキスト専用の最先端高精度モデル。国内論文や日本語文書の解析に最適です。',
     dimension: 384,
-    recommended: true,
+    recommended: false,
     languages: '日本語専用',
   },
   {
@@ -32,14 +41,6 @@ export const AVAILABLE_EMBEDDING_MODELS = [
     dimension: 384,
     recommended: false,
     languages: '多言語（日本語・英語・他100言語）',
-  },
-  {
-    id: 'Xenova/all-MiniLM-L6-v2',
-    name: 'all-MiniLM-L6-v2 (英語論文に最適、高速・軽量)',
-    description: '英語の学術論文や国際会議プロシーディングスに広く利用される標準軽量モデル。',
-    dimension: 384,
-    recommended: false,
-    languages: '英語',
   },
   {
     id: 'Xenova/bge-small-en-v1.5',
@@ -52,7 +53,7 @@ export const AVAILABLE_EMBEDDING_MODELS = [
 ] as const;
 
 /** デフォルトの埋め込みモデルID */
-export const DEFAULT_MODEL_ID = 'cl-nagoya/ruri-v3-30m';
+export const DEFAULT_MODEL_ID = 'Xenova/all-MiniLM-L6-v2';
 
 /** パイプラインの型（@huggingface/transformers の FeatureExtractionPipeline） */
 type FeatureExtractionPipeline = any;
@@ -247,4 +248,45 @@ export function generateDeterministicTestEmbedding(
   }
 
   return normalizeL2(vector);
+}
+
+/**
+ * 論文リストと埋め込みベクトルマップから、コサイン類似度が閾値以上のエッジリストを生成する純粋関数
+ * 
+ * @param paperIds - 対象の論文IDリスト
+ * @param embeddingsMap - 論文ID -> ベクトル配列のMap
+ * @param threshold - エッジを張るコサイン類似度の下限閾値 (0.0 〜 1.0)
+ * @returns 類似度エッジの配列
+ */
+export function buildSimilarityEdges(
+  paperIds: string[],
+  embeddingsMap: Map<string, number[]>,
+  threshold: number
+): SimilarityEdge[] {
+  const edges: SimilarityEdge[] = [];
+  const n = paperIds.length;
+
+  for (let i = 0; i < n; i++) {
+    const idA = paperIds[i];
+    const vecA = embeddingsMap.get(idA);
+    if (!vecA) continue;
+
+    for (let j = i + 1; j < n; j++) {
+      const idB = paperIds[j];
+      const vecB = embeddingsMap.get(idB);
+      if (!vecB) continue;
+
+      const sim = calculateCosineSimilarity(vecA, vecB);
+      if (sim >= threshold) {
+        edges.push({
+          id: `${idA}__${idB}`,
+          from: idA,
+          to: idB,
+          similarity: sim,
+        });
+      }
+    }
+  }
+
+  return edges;
 }

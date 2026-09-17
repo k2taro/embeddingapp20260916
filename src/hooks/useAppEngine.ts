@@ -6,7 +6,7 @@
  * UI側に明快なステータス・進捗率・可視化データを提供します。
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import {
   ExtractedPaper,
   PaperEmbedding,
@@ -14,6 +14,7 @@ import {
   ClusterGroup,
   EngineProgress,
   EngineSettings,
+  VisualizationMethod,
 } from '../types';
 import { extractTextFromPdf } from '../utils/pdfExtractor';
 import {
@@ -36,8 +37,10 @@ import { SAMPLE_ACADEMIC_PAPERS } from '../data/samplePapers';
 const INITIAL_SETTINGS: EngineSettings = {
   modelName: DEFAULT_MODEL_ID,
   clusterCount: 0, // 0 = 自動決定
-  umapNeighbors: 15,
+  umapNeighbors: 5, // デフォルト 5（数十本での利用を想定）
   umapMinDist: 0.1,
+  visualizationMethod: 'umap',
+  similarityThreshold: 0.3, // デフォルト 0.3
 };
 
 /** 初期進捗状態 */
@@ -318,12 +321,32 @@ export function useAppEngine() {
       const newSettings = { ...settings, ...updatedSettings };
       setSettings(newSettings);
 
-      if (papers.length > 0) {
+      const requiresRecomputation =
+        newSettings.modelName !== settings.modelName ||
+        newSettings.clusterCount !== settings.clusterCount ||
+        newSettings.umapNeighbors !== settings.umapNeighbors ||
+        newSettings.umapMinDist !== settings.umapMinDist;
+
+      if (papers.length > 0 && requiresRecomputation) {
         await executePipeline(papers, newSettings);
       }
     },
     [papers, settings, executePipeline]
   );
+
+  /**
+   * 可視化手法 (UMAP / ネットワーク) の即時切り替え
+   */
+  const setVisualizationMethod = useCallback((method: VisualizationMethod) => {
+    setSettings((prev) => ({ ...prev, visualizationMethod: method }));
+  }, []);
+
+  /**
+   * 類似度ネットワークのコサイン類似度閾値の即時調整
+   */
+  const setSimilarityThreshold = useCallback((threshold: number) => {
+    setSettings((prev) => ({ ...prev, similarityThreshold: threshold }));
+  }, []);
 
   /**
    * 選択中の論文オブジェクトを取得
@@ -357,27 +380,29 @@ export function useAppEngine() {
   );
 
   /**
-   * フィルタリング適用後のプロットデータ
+   * フィルタリング適用後のプロットデータ（selectedPaperIdの変更で無駄な再生成が走らないようメモ化）
    */
-  const filteredPoints = points.filter((point) => {
-    // クラスタ絞り込み
-    if (filterClusterId !== null && point.clusterId !== filterClusterId) {
-      return false;
-    }
-    // 検索クエリ絞り込み
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      const matchTitle = point.title.toLowerCase().includes(query);
-      const matchAbstract = point.abstract.toLowerCase().includes(query);
-      const matchKeyword = point.clusterKeywords.some((k) =>
-        k.toLowerCase().includes(query)
-      );
-      if (!matchTitle && !matchAbstract && !matchKeyword) {
+  const filteredPoints = useMemo(() => {
+    return points.filter((point) => {
+      // クラスタ絞り込み
+      if (filterClusterId !== null && point.clusterId !== filterClusterId) {
         return false;
       }
-    }
-    return true;
-  });
+      // 検索クエリ絞り込み
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const matchTitle = point.title.toLowerCase().includes(query);
+        const matchAbstract = point.abstract.toLowerCase().includes(query);
+        const matchKeyword = point.clusterKeywords.some((k) =>
+          k.toLowerCase().includes(query)
+        );
+        if (!matchTitle && !matchAbstract && !matchKeyword) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [points, filterClusterId, searchQuery]);
 
   /**
    * データをクリアして初期状態に戻す
@@ -405,6 +430,7 @@ export function useAppEngine() {
     // 進行状況・設定
     progress,
     settings,
+    cachedEmbeddings: cachedEmbeddingsRef.current,
     isProcessing,
     errorMessage,
     // フィルター状態
@@ -414,6 +440,8 @@ export function useAppEngine() {
     handlePdfFiles,
     loadSampleDataset,
     recluster,
+    setVisualizationMethod,
+    setSimilarityThreshold,
     setSelectedPaperId,
     setFilterClusterId,
     setSearchQuery,

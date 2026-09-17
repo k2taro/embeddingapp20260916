@@ -111,6 +111,25 @@ export interface EngineProgress {
 }
 
 /**
+ * 可視化手法の種別
+ */
+export type VisualizationMethod = 'umap' | 'network';
+
+/**
+ * 類似度ネットワークにおけるエッジデータ構造
+ */
+export interface SimilarityEdge {
+  /** エッジID */
+  id: string;
+  /** 接続元論文ID */
+  from: string;
+  /** 接続先論文ID */
+  to: string;
+  /** コサイン類似度 (0.0 〜 1.0) */
+  similarity: number;
+}
+
+/**
  * 解析エンジンの各種設定パラメータ
  */
 export interface EngineSettings {
@@ -122,4 +141,8 @@ export interface EngineSettings {
   umapNeighbors: number;
   /** UMAP: 最小距離 (min_dist) */
   umapMinDist: number;
+  /** 可視化手法: UMAP 2Dマップ または コサイン類似度ネットワーク */
+  visualizationMethod: VisualizationMethod;
+  /** 類似度ネットワーク: エッジを張るコサイン類似度の閾値 (0.0〜1.0) */
+  similarityThreshold: number;
 }

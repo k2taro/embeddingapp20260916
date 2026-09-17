@@ -14,11 +14,12 @@ import { Header } from './components/Header';
 import { EngineProgressBar } from './components/EngineProgressBar';
 import { PdfUploader } from './components/PdfUploader';
 import { PaperScatterPlot } from './components/PaperScatterPlot';
+import { PaperNetworkGraph } from './components/PaperNetworkGraph';
 import { ClusterLegend } from './components/ClusterLegend';
 import { PaperDetailDrawer } from './components/PaperDetailDrawer';
 import { PaperListTable } from './components/PaperListTable';
 import { EngineSettingsModal } from './components/EngineSettingsModal';
-import { ShieldCheck, Plus, Sparkles, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Plus, Sparkles, AlertCircle, Compass, Share2 } from 'lucide-react';
 
 export default function App() {
   // --- カスタムフックからエンジン状態とアクションを取得 ---
@@ -31,6 +32,7 @@ export default function App() {
     selectedPaperId,
     progress,
     settings,
+    cachedEmbeddings,
     isProcessing,
     errorMessage,
     filterClusterId,
@@ -38,6 +40,8 @@ export default function App() {
     handlePdfFiles,
     loadSampleDataset,
     recluster,
+    setVisualizationMethod,
+    setSimilarityThreshold,
     setSelectedPaperId,
     setFilterClusterId,
     setSearchQuery,
@@ -153,21 +157,71 @@ export default function App() {
               </label>
             </div>
 
-            {/* クラスタ凡例 */}
-            <ClusterLegend
-              clusterGroups={clusterGroups}
-              activeClusterId={filterClusterId}
-              onSelectCluster={setFilterClusterId}
-            />
+            {/* クラスタ凡例 & 可視化手法クイック切り替え */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="flex-1">
+                <ClusterLegend
+                  clusterGroups={clusterGroups}
+                  activeClusterId={filterClusterId}
+                  onSelectCluster={setFilterClusterId}
+                />
+              </div>
 
-            {/* メイン分析グリッド：左側に2Dマップ、右側に詳細インスペクター */}
+              {/* 可視化手法の即時切り替えタブ */}
+              <div className="shrink-0 flex items-center bg-slate-200/70 p-1 rounded-xl border border-slate-300/60 self-start md:self-center">
+                <button
+                  type="button"
+                  id="tab-view-umap"
+                  onClick={() => setVisualizationMethod('umap')}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    settings.visualizationMethod === 'umap'
+                      ? 'bg-white text-indigo-600 shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                  title="UMAP 2次元散布図マップ"
+                >
+                  <Compass className="w-3.5 h-3.5" />
+                  <span>UMAP マップ</span>
+                </button>
+                <button
+                  type="button"
+                  id="tab-view-network"
+                  onClick={() => setVisualizationMethod('network')}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    settings.visualizationMethod === 'network'
+                      ? 'bg-white text-indigo-600 shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                  title="コサイン類似度ネットワークグラフ"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>類似度ネットワーク</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-indigo-50 text-indigo-700 font-mono font-bold">
+                    {Math.round(settings.similarityThreshold * 100)}%
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* メイン分析グリッド：左側に可視化（UMAP散布図 or ネットワーク）、右側に詳細インスペクター */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
-                <PaperScatterPlot
-                  points={points}
-                  selectedPaperId={selectedPaperId}
-                  onSelectPaper={setSelectedPaperId}
-                />
+                {settings.visualizationMethod === 'network' ? (
+                  <PaperNetworkGraph
+                    points={points}
+                    embeddingsMap={cachedEmbeddings}
+                    threshold={settings.similarityThreshold}
+                    onThresholdChange={setSimilarityThreshold}
+                    selectedPaperId={selectedPaperId}
+                    onSelectPaper={setSelectedPaperId}
+                  />
+                ) : (
+                  <PaperScatterPlot
+                    points={points}
+                    selectedPaperId={selectedPaperId}
+                    onSelectPaper={setSelectedPaperId}
+                  />
+                )}
               </div>
 
               <div className="lg:col-span-1">
